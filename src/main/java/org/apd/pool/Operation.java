@@ -7,6 +7,9 @@ import org.apd.priority.Priority;
 import org.apd.storage.EntryResult;
 import org.apd.storage.SharedDatabase;
 
+/**
+ * Operation type. (read/write)
+ */
 public class Operation implements Runnable {
     private final StorageTask task;
     private final Priority priority;
@@ -23,16 +26,18 @@ public class Operation implements Runnable {
     }
 
     public void run() { 
+        /* Depending on the priority and task type,
+        puts in a queue the effect of the operation */
         try {
             if (task.isWrite()) {
-                priority.startWrite(task.index());
+                priority.beforeWrite(task.index());
                 resultQueue.put(sharedDatabase.addData(task.index(), task.data()));
-                priority.endWrite(task.index());
+                priority.afterWrite(task.index());
             
             } else {
-                priority.startRead(task.index());
+                priority.beforeRead(task.index());
                 resultQueue.put(sharedDatabase.getData(task.index()));
-                priority.endRead(task.index());
+                priority.afterRead(task.index());
             }
         } catch (Exception e) {
             e.printStackTrace();

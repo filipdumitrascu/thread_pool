@@ -27,15 +27,21 @@ public class TaskExecutor {
     }
 
     public List<EntryResult> ExecuteWork(int numberOfThreads, List<StorageTask> tasks, LockType lockType) {
+        /* Depending on the lock type, the object takes
+        over the read/write priority methods */
         Priority priority = switch (lockType) {
             case ReaderPreferred -> new ReaderPriority(storageSize);
             case WriterPreferred1 -> new Writer1Priority(storageSize);
             case WriterPreferred2 -> new Writer2Priority(storageSize);
         };
 
+        /* Instantiates the thread pool and a synchronized
+        queue for changes to the database */
         ThreadPool tpe = new ThreadPool(numberOfThreads);
         BlockingQueue<EntryResult> results = new LinkedBlockingQueue<>(); 
 
+        /* Put the tasks in the thread pool one at a
+        time to be processed by the workers */
         for (StorageTask task : tasks) {
             tpe.submit(new Operation(task, priority, sharedDatabase, results));
         }

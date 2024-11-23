@@ -3,15 +3,20 @@ package org.apd.pool;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * ThreadPool type.
+ */
 public class ThreadPool {
     private final Worker[] threads;
     private final BlockingQueue<Runnable> operationsQueue;
-    private volatile boolean isShutdown = false;
+    private volatile boolean isRunning = true;
 
     public ThreadPool(int numberOfThreads) {
         operationsQueue = new LinkedBlockingQueue<>();
         threads = new Worker[numberOfThreads];
-
+        
+        /*  When instantiating the thread pool,
+        all threads are started. */
         for (int i = 0; i < numberOfThreads; i++) {
             threads[i] = new Worker();
             threads[i].start();
@@ -19,43 +24,34 @@ public class ThreadPool {
     }
 
     public void submit(Runnable operation) {
-        if (!isShutdown) {
-            try {
-                operationsQueue.put(operation);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+        /* Adds a new task in the queue. */
+        try {
+            operationsQueue.put(operation);
+        } catch (Exception e) {
+            e.printStackTrace();    
         }
     }
 
     public void shutdown() {
-        isShutdown = true;
+        /* Waits for the threads to finish
+        the tasks in the queue. */
+        isRunning = false;
 
         for (Worker thread : threads) {
             try {
                 thread.join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
 
     public class Worker extends Thread {
         public void run() {
-            while (!isShutdown) {
-                try {
-                    Runnable operation = operationsQueue.poll();
-                    if (operation != null) {
-                        operation.run();
-                    }
-                } catch (Exception e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-
-            while (!operationsQueue.isEmpty()) {
+            /* Wxtracts the first queued task and executes it */
+            while (isRunning || !operationsQueue.isEmpty()) {
                 Runnable operation = operationsQueue.poll();
+                
                 if (operation != null) {
                     operation.run();
                 }

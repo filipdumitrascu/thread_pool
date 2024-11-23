@@ -5,30 +5,37 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class ReaderPriority extends Priority{
+    /* number of readers reading simultaneously from the shared resource */
     private final List<Integer> readers;
+    
+    /* semaphore used to change the number of readers */
     private final List<Semaphore> mutexReadersCount;
-    private final List<Semaphore> sharedVars;
+
+    /* semaphore used to protect the common resource */
+    private final List<Semaphore> sharedRes;
 
     public ReaderPriority(int zonesCount) {
         this.readers = new ArrayList<>(zonesCount);
         this.mutexReadersCount = new ArrayList<>(zonesCount);
-        this.sharedVars = new ArrayList<>(zonesCount);
+        this.sharedRes = new ArrayList<>(zonesCount);
 
         for (int i = 0; i < zonesCount; i++) {
             readers.add(0);
             mutexReadersCount.add(new Semaphore(1));
-            sharedVars.add(new Semaphore(1));
+            sharedRes.add(new Semaphore(1));
         }
     }
 
     @Override
-    public void startRead(int index) {
+    public void beforeRead(int index) {
         try {
             mutexReadersCount.get(index).acquire();
-            
             readers.set(index, readers.get(index) + 1);
+
+            /* If it's the first reader, then reserves
+            the memory area so that no writer enters */
             if (readers.get(index) == 1) {
-                sharedVars.get(index).acquire();
+                sharedRes.get(index).acquire();
             }
 
             mutexReadersCount.get(index).release();
@@ -38,13 +45,15 @@ public class ReaderPriority extends Priority{
     }
 
     @Override
-    public void endRead(int index) {
+    public void afterRead(int index) {
         try {
             mutexReadersCount.get(index).acquire();
-
             readers.set(index, readers.get(index) - 1);
+
+            /* If it is the last reader, clears the
+            memory area from which it was read */
             if (readers.get(index) == 0) {
-                sharedVars.get(index).release();
+                sharedRes.get(index).release();
             }
     
             mutexReadersCount.get(index).release();
@@ -54,9 +63,10 @@ public class ReaderPriority extends Priority{
     }
 
     @Override
-    public void startWrite(int index) {
+    public void beforeWrite(int index) {
         try {
-            sharedVars.get(index).acquire();
+            /* the writer enters the common resource */
+            sharedRes.get(index).acquire();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -64,7 +74,8 @@ public class ReaderPriority extends Priority{
     }
 
     @Override
-    public void endWrite(int index) {
-        sharedVars.get(index).release();
+    public void afterWrite(int index) {
+        /* the writer releases the resource */
+        sharedRes.get(index).release();
     }
 }

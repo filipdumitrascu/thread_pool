@@ -5,14 +5,29 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class Writer1Priority extends Priority {
+    /* number of readers reading simultaneously from the shared resource */
     private final List<Integer> readers;
+
+    /* writers writing in the memory zone (there will be only one,
+    there cannot be more than one writer writing at the same time) */
     private final List<Integer> writers;
 
+    /* readers waiting to enter the memory zone */
     private final List<Integer> waitingReaders;
+
+    /* writers waiting to enter the memory zone */
     private final List<Integer> waitingWriters;
 
+    /* semaphore used to put writers on hold if there is a writer
+    or more readers in the memory zone (critical zone) */
     private final List<Semaphore> mutexReadersCount;
+
+    /* semaphore used to put readers on hold if there is a writer
+    writing in the memory zone or if there is writers on hold
+    (because they have priority over readers) */
     private final List<Semaphore> mutexWritersCount;
+
+    /* semaphore used to protect the common resource */
     private final List<Semaphore> sharedVars;
 
     public Writer1Priority(int zonesCount) {
@@ -39,10 +54,12 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void startRead(int index) {
+    public void beforeRead(int index) {
         try {
             sharedVars.get(index).acquire();
             
+            /* If there is at least one writer writing in the shared resource
+            or if there is a writer in waiting, the reader is waiting */
             if (writers.get(index) > 0 || waitingWriters.get(index) > 0) {
                 waitingReaders.set(index, waitingReaders.get(index) + 1);
                 sharedVars.get(index).release();
@@ -52,6 +69,8 @@ public class Writer1Priority extends Priority {
             readers.set(index, readers.get(index) + 1);
 
             if (waitingReaders.get(index) > 0) {
+                /* another reader has joined the shared resource,
+                coming out of the waiting state */
                 waitingReaders.set(index, waitingReaders.get(index) - 1);
                 mutexReadersCount.get(index).release();
             
@@ -65,7 +84,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void endRead(int index) {
+    public void afterRead(int index) {
         try {
             sharedVars.get(index).acquire();
             readers.set(index, readers.get(index) - 1);
@@ -84,7 +103,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void startWrite(int index) {
+    public void beforeWrite(int index) {
         try {
             sharedVars.get(index).acquire();
 
@@ -104,7 +123,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void endWrite(int index) {
+    public void afterWrite(int index) {
         try {
             sharedVars.get(index).acquire();
 

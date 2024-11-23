@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Writer2Priority extends Priority {
+    /* the readers from the memory zone */
     private final List<Integer> readers;
+
+    /* the writers in the memory zone */
     private final List<Integer> writers;
+    
+    /* writers waiting to enter the memory zone */
     private final List<Integer> waitingWriters;
     
     public Writer2Priority(int zonesCount) {
@@ -21,27 +26,29 @@ public class Writer2Priority extends Priority {
     }
 
     @Override
-    public void startRead(int index) {
+    public void beforeRead(int index) {
         synchronized (this) {
+            /* Waits if there are writers on wait or active. */
             while (writers.get(index) > 0 || waitingWriters.get(index) > 0) {
-                // Așteptăm dacă există scriitori activi sau în așteptare
                 try {
                     wait();
                 } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // Re-interrupt thread-ul în caz de eroare
+                    e.printStackTrace();
                 }
             }
-            // Creștem numărul de cititori activi
+
+            /* Increases the number of readers. */
             readers.set(index, readers.get(index) + 1);
         }
     }
 
     @Override
-    public void endRead(int index) {
+    public void afterRead(int index) {
         synchronized (this) {
-            // Reducem numărul de cititori activi
+            /* Decreases the number of readers. */
             readers.set(index, readers.get(index) - 1);
-            // Dacă nu mai sunt cititori, notificăm eventualii scriitori în așteptare
+            
+            /* If there are no more readers, notify the writers. */
             if (readers.get(index) == 0) {
                 notifyAll();
             }
@@ -49,33 +56,35 @@ public class Writer2Priority extends Priority {
     }
 
     @Override
-    public void startWrite(int index) {
+    public void beforeWrite(int index) {
         synchronized (this) {
-            // Creștem numărul de scriitori în așteptare
+            /* Increases the number of writers on wait. */
             waitingWriters.set(index, waitingWriters.get(index) + 1);
 
             while (readers.get(index) > 0 || writers.get(index) > 0) {
-                // Așteptăm până când zona devine disponibilă
+                /* Waits till the shared resource becomes available */
                 try {
                     wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // Re-interrupt thread-ul în caz de eroare
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
-            // Zona este disponibilă, deci scădem numărul de scriitori în așteptare
+            // The shared resource is available, so decreases the waiting writers.
             waitingWriters.set(index, waitingWriters.get(index) - 1);
-            // Creștem numărul de scriitori activi
+            
+            // Increases the number of writers.
             writers.set(index, writers.get(index) + 1);
         }
     }
 
     @Override
-    public void endWrite(int index) {
+    public void afterWrite(int index) {
         synchronized (this) {
-            // Reducem numărul de scriitori activi
+            /* Decreases the writers. */
             writers.set(index, writers.get(index) - 1);
-            // Notificăm toți, începând cu scriitorii (prin ordinea priorității impusă de while-uri)
+            
+            /* Notify the readers that the writers are done. */
             notifyAll();
         }
     }
