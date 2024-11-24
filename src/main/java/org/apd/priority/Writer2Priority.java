@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Writer2Priority extends Priority {
-    /* the readers from the memory zone */
+    /* The readers from the memory zone */
     private final List<Integer> readers;
 
-    /* the writers in the memory zone */
+    /* The writers in the memory zone */
     private final List<Integer> writers;
     
-    /* writers waiting to enter the memory zone */
+    /* Writers waiting to enter the memory zone */
     private final List<Integer> waitingWriters;
     
     public Writer2Priority(int zonesCount) {

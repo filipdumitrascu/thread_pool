@@ -36,7 +36,7 @@ public class TaskExecutor {
         };
 
         /* Instantiates the thread pool and a synchronized
-        queue for changes to the database */
+        queue for storing the changes to the database */
         ThreadPool tpe = new ThreadPool(numberOfThreads);
         BlockingQueue<EntryResult> results = new LinkedBlockingQueue<>(); 
 

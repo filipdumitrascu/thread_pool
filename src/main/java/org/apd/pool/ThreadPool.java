@@ -48,7 +48,7 @@ public class ThreadPool {
 
     public class Worker extends Thread {
         public void run() {
-            /* Wxtracts the first queued task and executes it */
+            /* Extracts the first queued task and executes it */
             while (isRunning || !operationsQueue.isEmpty()) {
                 Runnable operation = operationsQueue.poll();
                 

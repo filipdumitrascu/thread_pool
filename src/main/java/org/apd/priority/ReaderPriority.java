@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class ReaderPriority extends Priority{
-    /* number of readers reading simultaneously from the shared resource */
+    /* Number of readers reading simultaneously from the shared resource */
     private final List<Integer> readers;
     
-    /* semaphore used to change the number of readers */
+    /* Semaphore used to change the number of readers */
     private final List<Semaphore> mutexReadersCount;
 
-    /* semaphore used to protect the common resource */
+    /* Semaphore used to protect the common resource */
     private final List<Semaphore> sharedRes;
 
     public ReaderPriority(int zonesCount) {
@@ -65,7 +65,7 @@ public class ReaderPriority extends Priority{
     @Override
     public void beforeWrite(int index) {
         try {
-            /* the writer enters the common resource */
+            /* The writer enters the common resource */
             sharedRes.get(index).acquire();
 
         } catch (InterruptedException e) {
@@ -75,7 +75,7 @@ public class ReaderPriority extends Priority{
 
     @Override
     public void afterWrite(int index) {
-        /* the writer releases the resource */
+        /* The writer releases the resource */
         sharedRes.get(index).release();
     }
 }

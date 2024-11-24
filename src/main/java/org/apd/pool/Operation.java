@@ -27,7 +27,7 @@ public class Operation implements Runnable {
 
     public void run() { 
         /* Depending on the priority and task type,
-        puts in a queue the effect of the operation */
+        puts in a queue the result of the operation */
         try {
             if (task.isWrite()) {
                 priority.beforeWrite(task.index());
