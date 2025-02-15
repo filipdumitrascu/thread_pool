@@ -26,7 +26,7 @@ public class Writer2Priority extends Priority {
     }
 
     @Override
-    public void beforeRead(int index) {
+    public void readerLock(int index) {
         synchronized (this) {
             /* Waits if there are writers on wait or active. */
             while (writers.get(index) > 0 || waitingWriters.get(index) > 0) {
@@ -43,7 +43,7 @@ public class Writer2Priority extends Priority {
     }
 
     @Override
-    public void afterRead(int index) {
+    public void readerUnlock(int index) {
         synchronized (this) {
             /* Decreases the number of readers. */
             readers.set(index, readers.get(index) - 1);
@@ -56,7 +56,7 @@ public class Writer2Priority extends Priority {
     }
 
     @Override
-    public void beforeWrite(int index) {
+    public void writerLock(int index) {
         synchronized (this) {
             /* Increases the number of writers on wait. */
             waitingWriters.set(index, waitingWriters.get(index) + 1);
@@ -79,7 +79,7 @@ public class Writer2Priority extends Priority {
     }
 
     @Override
-    public void afterWrite(int index) {
+    public void writerUnlock(int index) {
         synchronized (this) {
             /* Decreases the writers. */
             writers.set(index, writers.get(index) - 1);

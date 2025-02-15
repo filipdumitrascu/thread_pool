@@ -2,14 +2,14 @@ package org.apd.priority;
 
 public abstract class Priority {
     /* the operations done before reading to ensure the priority */
-    public abstract void beforeRead(int index);
+    public abstract void readerLock(int index);
     
     /* the operations done after reading to ensure the priority */
-    public abstract void afterRead(int index);
+    public abstract void readerUnlock(int index);
     
     /* the operations done before writing to ensure the priority */
-    public abstract void beforeWrite(int index);
+    public abstract void writerLock(int index);
     
     /* the operations done before writing to ensure the priority */
-    public abstract void afterWrite(int index);
+    public abstract void writerUnlock(int index);
 }

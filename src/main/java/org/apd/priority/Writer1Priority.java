@@ -54,7 +54,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void beforeRead(int index) {
+    public void readerLock(int index) {
         try {
             sharedVars.get(index).acquire();
             
@@ -84,7 +84,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void afterRead(int index) {
+    public void readerUnlock(int index) {
         try {
             sharedVars.get(index).acquire();
             readers.set(index, readers.get(index) - 1);
@@ -103,7 +103,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void beforeWrite(int index) {
+    public void writerLock(int index) {
         try {
             sharedVars.get(index).acquire();
 
@@ -123,7 +123,7 @@ public class Writer1Priority extends Priority {
     }
 
     @Override
-    public void afterWrite(int index) {
+    public void writerUnlock(int index) {
         try {
             sharedVars.get(index).acquire();
 

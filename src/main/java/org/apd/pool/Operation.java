@@ -30,14 +30,14 @@ public class Operation implements Runnable {
         puts in a queue the result of the operation */
         try {
             if (task.isWrite()) {
-                priority.beforeWrite(task.index());
+                priority.writerLock(task.index());
                 resultQueue.put(sharedDatabase.addData(task.index(), task.data()));
-                priority.afterWrite(task.index());
+                priority.writerUnlock(task.index());
             
             } else {
-                priority.beforeRead(task.index());
+                priority.readerLock(task.index());
                 resultQueue.put(sharedDatabase.getData(task.index()));
-                priority.afterRead(task.index());
+                priority.readerUnlock(task.index());
             }
         } catch (Exception e) {
             e.printStackTrace();

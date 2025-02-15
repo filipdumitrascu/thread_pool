@@ -25,13 +25,11 @@ priority becomes the implementation for ReaderPriority or WriterPriority
 read/write are implemented depending on the priority. 
 
 ## Conclusion
-Din punct de vedere al performantei, Thread Poolul este mai eficient intrucat 
-porneste un numar limitat de threaduri, ales astfel incat sa nu dureze mai mult
-crearea si curatarea lor decat ar dura executarea seriala a intregilor taskuri.
-Threadurile sunt worker pentru mai multe taskuri si se opresc dupa apelul
-de shutdown si dupa ce au terminat toate taskurile din coada.
-Cat despre teste, sunt acoperite mai multe cazuri pentru a fi asigurata o
-implementare completa. Numarul de threaduri nu depaseste 12 iar numarul de taskuri
-nu depaseste 500. Raportul cititori-scriitori favorizeaza scriitorii iar zonele
-de memorie ale bazei de date variaza intre 255 si 3000 de zone. Astfel, trebuie
-alocate o multitudine de semafoare pentru a asigura prioritatea dorita.
+From a performance point of view, the Thread Pool is more efficient because
+it starts a limited number of threads, chosen so that it takes no more time
+to create and clean them than it would take to serially execute the entire
+tasks. Also, the size of the database affects the run time. Threads are
+workers for multiple tasks and stop after the shutdown call and after they
+have finished all tasks in the queue. As for tests, several cases are covered
+to ensure a complete implementation. The type of priority used is influenced
+by the ratio of readers to writers.
